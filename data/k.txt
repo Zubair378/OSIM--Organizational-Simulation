@@ -1,0 +1,2777 @@
+#include<iostream>
+#include<string>
+#include<ctime>
+#include<fstream>
+
+using namespace std;
+
+int logged;
+
+bool checkequal(char* , char*);
+void enter(char*);
+char* decrypt(char*);
+char* encrypt(char*);
+void ShowExpiredTasks();
+string replaceUnderscoresWithSpaces(const string&);
+void replaceSpacesWithUnderscores(string& );
+int getNextTaskId();
+
+
+//////////////////////////Audit\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+
+class Audit
+{
+	public:
+	void add(string,string);
+	friend ostream& operator<<(ostream&,Audit);
+}a;
+
+
+/////////////////////////timemanager\\\\\\\\\\\\\\\\\\\\\\\
+
+class TimeManager
+{
+	public:
+	string CurrentTime();
+	bool TTLcheck(string,int=11,int=0,int=0);
+};
+
+//////////////////////////Users\\\\\\\\\\\\\\\\\\\\\\\\
+
+class Users
+{
+	public:
+	Users();
+};
+
+
+//////////////////////Notifications\\\\\\\\\\\\\\\\\\\\\\
+
+class notification {
+public:
+    notification();
+    notification(char*);
+    void setnotification(string type, string sender, string receiver, const string& message_content) ;
+
+    void displayAllNotifications() ;
+    friend ostream& operator<<(ostream&,notification);
+}nn;
+
+///////////////////////Message\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+class Message
+{
+	char* sender;
+	public:
+	Message(char*);
+	void sendinfo();
+	void sendprivate();
+	void sendalert();
+};
+
+///////////////////Priority Level\\\\\\\\\\\\\\\\\\\\\\\\
+
+class prioritylevel {
+private:
+    string priorityslevel;
+public:
+    prioritylevel();
+    void setPriorityLevel(string new_prioritylevel);
+    string getPrioritysLevel();
+};
+
+
+///////////////////////////Task\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+class TaskCreation {
+private:
+    int taskId;
+    string taskTitle;
+    string taskDescription;
+    string status;
+    prioritylevel priority; 
+    string assignee;       
+    string assignedTo;     
+    time_t creationTime;
+    int ttlSeconds; 
+
+public:
+   
+    TaskCreation() : taskId(0), taskTitle(""), taskDescription(""), status("new"), creationTime(0), ttlSeconds(0) {
+        
+    }
+
+    
+    TaskCreation(int , string , string , string , string , string , int  = 0);
+
+    TaskCreation(int , string , string ,string , string , string ,string , time_t , int );
+
+
+    void AssignTask(string , string );
+
+    void DelegateTask(string ,string ) ;
+
+    void DeleteTask() ;
+
+    void UpdateTaskStatus(string ) ;
+    void DisplayTask() ;
+
+    static void ListAllTasks();
+
+    int getTaskId();
+};
+
+TaskCreation* findTaskById(int );
+
+//////////////////////PolicyEngine\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+class policyengine {
+private:
+    string role[5] = {"Junior", "Employee", "Manager", "Director", "Executive"};
+public:
+    int getrole(string );
+
+    bool candelegate(string , string );
+    bool canassign(string , string ) ;
+
+    bool cansend_message(string , string , string ) ;
+    bool decrypt_message(string , string ) ;
+
+    bool isValidRole(string ) ;
+}pe;
+
+
+/////////////////////////BAse\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+class Base
+{
+	
+	public:
+	
+	static TaskCreation* currentTask;
+	void CreateTask(string);
+	void AssignTask(string);
+	virtual void DelegateTask(string);
+	void SelectTask();
+	void Inbox();
+};
+TaskCreation* Base::currentTask = nullptr;
+////////////////////////Executive\\\\\\\\\\\\\\\\\\\\\\\\
+
+class Executive:public Base
+{
+	
+	public:
+	Executive();
+	
+};
+
+///////////////////////Director\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+class Director:public Base
+{
+	
+	public:
+	Director();
+	void DelegateTask(string );
+	
+};
+
+//////////////////////Manager\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+class Manager:public Base
+{
+	public:
+	Manager();
+	void DelegateTask(string);
+	
+};
+
+//////////////////////Employee\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+class Employee:public Base
+{
+	
+	public:
+	Employee();
+	void DelegateTask(string);
+	
+};
+
+
+/////////////////////Junior\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+class Junior:public Base
+{
+	public:
+	Junior();
+	void DelegateTask(string);
+};
+
+
+int main()
+{
+	int iii=0;
+	int raw=0;
+	while(iii<3)
+	{
+	
+		cout<<"\n\n";
+		cout<<"	 __      __       .__                                  __           .____                 .__         __________                        \n";
+		cout<<"	/  \\    /  \\ ____ |  |   ____  ____   _____   ____   _/  |_  ____   |    |    ____   ____ |__| ____   \\______   \\_____     ____   ____  \n";
+		cout<<"	\\   \\/\\/   // __ \\|  | _/ ___\\/  _ \\ /     \\_/ __ \\  \\   __\\/  _ \\  |    |   /  _ \\ / ___\\|  |/    \\   |     ___/\\__  \\   / ___\\_/ __ \\ \n";
+		cout<<"	 \\        /\\  ___/|  |_\\  \\__(  <_> )  Y Y  \\  ___/   |  | (  <_> ) |    |__(  <_> ) /_/  >  |   |  \\  |    |     / __ \\_/ /_/  >  ___/ \n";
+		cout<<"	  \\__/\\  /  \\___  >____/\\___  >____/|__|_|  /\\___  >  |__|  \\____/  |_______ \\____/\\___  /|__|___|  /  |____|    (____  /\\___  / \\___  >\n";
+		cout<<"	       \\/       \\/          \\/            \\/     \\/                         \\/    /_____/         \\/                  \\//_____/      \\/ \n";
+		cout<<"\n\n";
+		char name[20],pass[20];
+		cout<<"Enter User-Name: ";
+		enter(name);
+		cout<<"Enter Password: ";
+		enter(pass);
+		
+		fstream auth;
+		auth.open("users.txt",ios::in);
+		int ii=0;
+		int c=0;
+		while(!auth.eof())
+		{
+			char arr1[20],arr2[20],arr3[3];
+			for(int i=0;1;i++)
+			{
+				auth.get(arr1[i]);
+				if(arr1[i]=='-')
+				{
+					arr1[i]='\0';
+					break;
+				}
+			}
+			for(int i=0;1;i++)
+			{
+				auth.get(arr2[i]);
+				if(arr2[i]=='-')
+				{
+					arr2[i]='\0';
+					break;
+				}
+			}
+			char* arr4=decrypt(arr2);
+			auth.get(arr3[0]);
+			auth.get(arr3[1]);
+			arr3[2]='\0';
+			
+			if(checkequal(arr1,name) && checkequal(arr4,pass))
+			{
+				TimeManager t;
+				string s=t.CurrentTime();
+				s[17]+=3;
+				int pp=(s[17]-48)*10+(s[18]-48);
+				if(pp>=60)
+				{
+					if(s[15]=='9')
+					{
+						if(s[14]=='5')
+						{
+							s[12]+=1;
+							s[14]='0';	
+						}
+						else
+						s[14]+=1;
+						s[15]='0';
+					}
+					else
+					{
+						s[15]+=1;
+					}
+				}
+				pp=pp%60;
+				s[17]=(pp/10)+48;
+				s[18]=pp%10+48;
+				srand(time(0));
+				int OTP=rand()%99999+100000;
+				fstream otp;
+				otp.open("otp.txt",ios::trunc|ios::out);
+				otp<<OTP;
+				otp.close();
+				
+				cout<<"Enter otp (after 30 sec,it will expire)";
+				int oo;
+				cin>>oo;
+				
+				if(t.TTLcheck(s))
+				{
+					if(oo==OTP)
+					{
+						cout<<"OTP verified!!\n";
+						c++;
+						a.add("Login","Kuch to Waja ho gi");
+						cout<<"\t\t\t\tSuccessfull login!\n";
+						logged=ii;
+						if(checkequal(arr3,"ex"))
+						{
+							Base* e=new Executive;
+							delete e;
+						}
+						else if(checkequal(arr3,"ma"))
+						{
+							Base* m=new Manager ;
+							delete m;
+						}
+						else if(checkequal(arr3,"di"))
+						{
+							Base* d=new Director;
+							delete d;
+						}
+						else if(checkequal(arr3,"em"))
+						{
+							Base* e=new Employee;
+							delete e;
+						}
+						else if(checkequal(arr3,"ju"))
+						{
+							Base* j=new Junior;
+							delete j;
+						}
+					}
+					else
+					{
+						cout<<"Incorrect OTP!!\n";
+						cin.ignore();
+						break;
+					}
+				}
+				else
+				{
+					cout<<"OTP Expired!!\nTry to Login again...\n";
+				}
+				
+				
+				
+				iii=0;
+				break;
+			}
+			delete arr4;
+			char temp;
+			auth.get(temp);
+			ii++;
+			raw++;
+			
+		}
+		if(!c)
+		{
+			cout<<"Invalid User\n";
+			a.add("Failed_login","Koi to kuch karne ki try kar raha hai");
+		}
+		auth.close();
+		iii++;
+	
+		
+	}
+
+	return 0;
+}
+char* encrypt(char * a)
+{
+	int s=0;
+	for(;a[s]!='\0';s++)
+	s++;
+	s++;
+	char* b=new char[s];
+	for(int i=0;a[i]!='\0';i++)
+	{
+		if(i%2==0)
+		b[i]=a[i]-3;
+		else
+		b[i]=a[i];
+	}
+	b[s-1]='\0';
+	return b;
+}
+
+char* decrypt(char* a)
+{
+	int s=0;
+	for(;a[s]!='\0';s++);
+	s++;
+	char* b=new char[s];
+	for(int i=0;a[i]!='\0';i++)
+	{
+		if(i%2==0)
+		b[i]=a[i]+3;
+		else
+		b[i]=a[i];
+	}
+	b[s-1]='\0';
+	return b;
+}
+void enter(char* a)
+{
+	for(int i=0;1;i++)
+	{
+		cin.get(a[i]);
+		if(a[i]=='\n')
+		{
+			a[i]='\0';
+			break;
+		}
+	}
+}
+
+bool checkequal(char* a, char* b)
+{
+	int i1=0,i2=0;
+	for(;a[i1]!='\0';i1++);
+	for(;b[i2]!='\0';i2++);
+	if(i1!=i2)
+	return false;
+	for(int i=0;a[i]!='\0' && b[i]!='\0';i++)
+	{
+		if(a[i]!=b[i])
+		return false;
+	}
+	return true;
+}
+
+void ShowExpiredTasks() {
+    ifstream file("Tasks.txt");
+    if (!file.is_open()) {
+        cout << "Error opening tasks file or no tasks exist yet." << endl;
+        return;
+    }
+
+    cout << "\n--- Expired Tasks ---" << endl;
+    int expired_count = 0; 
+    int id_file;
+    int ttl_file;
+    string title_file, desc_file, status_file, priority_file, assignee_file, assignedTo_file;
+    time_t createdAt_file;
+    time_t currentTime = time(0); 
+
+    while (file >> id_file >> title_file >> desc_file >> status_file >> priority_file >> assignee_file >> assignedTo_file >> createdAt_file >> ttl_file) {
+        
+        if (ttl_file > 0 && difftime(currentTime, createdAt_file) > ttl_file) {
+            expired_count++;
+            cout << "Task ID: " << id_file
+                 << " | Title: " << replaceUnderscoresWithSpaces(title_file)
+                 << " | Status: " << replaceUnderscoresWithSpaces(status_file)
+                 << " | Priority: " << priority_file
+                 << " | Expired (Created: " << ctime(&createdAt_file) << ")" << endl; 
+        }
+    }
+
+    if (expired_count == 0) {
+        cout << "No expired tasks found." << endl;
+    }
+    cout << "\nTotal expired tasks: " << expired_count << endl;
+    cout << "---------------------\n" << endl;
+    file.close();
+}
+
+string replaceUnderscoresWithSpaces(const string& str) {
+    string result = str;
+    for (int i = 0; i < result.length(); i++) {
+        if (result[i] == '_') {
+            result[i] = ' ';
+        }
+    }
+    return result;
+}
+
+void replaceSpacesWithUnderscores(string& str) {
+    for (int i = 0; i < str.length(); i++) {
+        if (str[i] == ' ') {
+            str[i] = '_';
+        }
+    }
+}
+
+int getNextTaskId() {
+    ifstream file("Tasks.txt");
+    if (!file.is_open()) {
+        return 1; 
+    }
+
+    int maxId = 0;
+    int FileId_iter;
+    
+    string dummy_str; 
+    time_t dummy_time;
+    int dummy_int;
+
+    while (file >> FileId_iter >> dummy_str >> dummy_str >> dummy_str >> dummy_str >> dummy_str >> dummy_str >> dummy_time >> dummy_int) {
+        if (FileId_iter > maxId) {
+            maxId = FileId_iter;
+        }
+    }
+    file.close();
+    return maxId + 1;
+}
+TaskCreation* findTaskById(int taskId_to_find) {
+    ifstream file("Tasks.txt");
+    if (!file.is_open()) {
+        
+        return nullptr;
+    }
+
+    int FileId_local;
+    int FileTtl_local;
+    string FileTitle_local, FileDescription_local, FileStatus_local, FilePriority_local, FileAssignee_local, FileAssignedTo_local;
+    time_t FileTime_local;
+
+    while (file >> FileId_local >> FileTitle_local >> FileDescription_local >> FileStatus_local >> FilePriority_local >> FileAssignee_local >> FileAssignedTo_local >> FileTime_local >> FileTtl_local) {
+        if (FileId_local == taskId_to_find) {
+           
+            cout << "\n--- Task Found (ID: " << taskId_to_find << ") ---" << endl;
+            cout << "Task ID: " << FileId_local << endl;
+            cout << "Title: " << replaceUnderscoresWithSpaces(FileTitle_local) << endl;
+            cout << "Description: " << replaceUnderscoresWithSpaces(FileDescription_local) << endl;
+            cout << "Status: " << replaceUnderscoresWithSpaces(FileStatus_local) << endl;
+            cout << "Priority: " << FilePriority_local << endl; 
+            cout << "Assigner: " << replaceUnderscoresWithSpaces(FileAssignee_local) << endl;
+            cout << "Assigned To: " << replaceUnderscoresWithSpaces(FileAssignedTo_local) << endl;
+            cout << "Creation Time: " << (FileTime_local == 0 ? "Not set" : ctime(&FileTime_local));
+            cout << "TTL (seconds): " << FileTtl_local << (FileTtl_local == 0 ? " (No Expiry)" : "") << endl;
+            cout << "---------------------------------------\n" << endl;
+
+            file.close();
+
+            
+            TaskCreation* task = new TaskCreation(
+                FileId_local,
+                replaceUnderscoresWithSpaces(FileTitle_local),
+                replaceUnderscoresWithSpaces(FileDescription_local),
+                replaceUnderscoresWithSpaces(FileStatus_local),
+                FilePriority_local, 
+                replaceUnderscoresWithSpaces(FileAssignee_local),
+                replaceUnderscoresWithSpaces(FileAssignedTo_local),
+                FileTime_local,
+                FileTtl_local
+            );
+            return task;
+        }
+    }
+
+    file.close();
+    
+    return nullptr; 
+}
+
+//////////////////////////Audit\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+void Audit::add(string s1,string s2)
+{
+	fstream audit;
+	audit.open("audit.txt",ios::app);
+	TimeManager t;
+	string stamp=t.CurrentTime();
+	char* u;
+		
+	fstream auth;
+	auth.open("users.txt",ios::in);
+	
+	fstream no;
+	no.open("noofuser.txt",ios::in);
+	int size;
+	no>>size;
+	no.close();
+	for(int k=0;k<size;k++)
+	{
+		char arr1[20],arr2[20],arr3[3];
+		for(int i=0;1;i++)
+		{
+			auth.get(arr1[i]);
+			if(arr1[i]=='-')
+			{
+				arr1[i]='\0';
+				break;
+			}
+		}
+		for(int i=0;1;i++)
+		{
+			auth.get(arr2[i]);
+			if(arr2[i]=='-')
+			{
+				arr2[i]='\0';
+				break;
+			}
+		}
+		auth.get(arr3[0]);
+		auth.get(arr3[1]);
+		arr3[2]='\0';
+		
+		if(k!=logged)
+		{
+			
+		}
+		else
+		{
+			int i1=0;
+			for(;arr1[i1]!='\0';i1++);
+			u=new char[i1];
+			for(int i=0;i<i1;i++)
+			u[i]=arr1[i];
+			u[i1]='\0';
+		}
+		
+		char temp;
+		auth.get(temp);
+		
+		
+	}
+	auth.close();
+	string name=string(u);
+	audit<<'['<<stamp<<']'<<' '<<name<<' '<<s1<<" ("<<s2<<")\n";
+	audit.close();
+}
+
+ostream& operator<<(ostream& cout,Audit a1)
+{
+	fstream show;
+	show.open("audit.txt",ios::in);
+	cout<<" Date&Time            User	  Task         Details\n";
+	char temp;
+	while(show.get(temp))
+	cout<<temp;
+	
+	show.close();
+	return cout;
+	
+}
+
+//////////////////////////Time\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+string TimeManager::CurrentTime()
+{
+    time_t now = time(0);
+    tm* localTime = localtime(&now);
+    char buffer[100];
+    strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", localTime);
+
+    return string(buffer);
+}
+
+bool TimeManager::TTLcheck(string s,int i,int sec1,int sec2)
+{
+	
+	if(i>=19)
+	return true;
+	
+	TimeManager t;
+	string c=t.CurrentTime();
+	int t1=(c[i]-48)*10+(c[i+1]-48);
+	int t2=(s[i]-48)*10+(s[i+1]-48);
+	
+	if(i==17)
+	{
+		sec1+=t1;
+		sec2+=t2;
+		if(sec1>sec2)
+		return false;
+	}	
+	
+	
+	
+	sec1+=t1*60;
+	sec2+=t2*60;
+	
+	i+=3;
+	
+	return TTLcheck(s,i,sec1,sec2);
+	
+}
+
+///////////////////////////USer\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+
+Users::Users()
+{
+	char n[20],p[20],r[3];
+	cout<<"Enter the new User-name: ";
+	cin.ignore();
+	enter(n);
+	cout<<"Enter the password: ";
+	enter(p);
+	cout<<"Select the role for user:\n";
+	cout<<"1.Director\n";
+	cout<<"2.Manager\n";
+	cout<<"3.Employee\n";
+	cout<<"4.Junior\n";
+	
+	int i;
+	cin>>i;
+	switch(i)
+	{
+		case 1:
+		{
+			r[0]='d';
+			r[1]='i';
+		}
+		break;
+		case 2:
+		{
+			r[0]='m';
+			r[1]='a';
+		}
+		break;
+		case 3:
+		{
+			r[0]='e';
+			r[1]='m';
+		}
+		break;
+		case 4:
+		{
+			r[0]='j';
+			r[1]='u';
+		}
+		break;
+		default:
+		{
+			cout<<"wrong input!...program going to shuuuu....\n";
+			exit(1);
+		}
+	}
+	r[2]='\0';
+	
+	string ep=encrypt(p);
+	fstream add;
+	add.open("users.txt",ios::app);
+	add<<n;
+	add<<'-';
+	add<<ep;
+	add<<'-';
+	add<<r;
+	add<<"\n";
+	
+	add.close();
+	cout<<"User added Successfully!";
+	
+	fstream update;
+	update.open("noofuser.txt",ios::in|ios::out);
+	int no1;
+	update>>no1;
+	no1++;
+	update.close();
+	fstream khaali;
+	khaali.open("noofuser.txt",ios::trunc|ios::out);
+	khaali<<no1;
+	khaali.close();
+	
+	
+	a.add("New_User_Added","Zaroorat The bhe");
+}
+
+
+///////////////////////////////Notification\\\\\\\\\\\\\\\\\\\
+
+notification::notification(){};
+
+notification::notification(char* a)
+{
+	string type, sender_role, receiver_role, message;
+
+        cout << "Enter notification type (warning/alert): ";
+        cin.ignore();
+        getline(cin, type);
+
+        sender_role=string(a);
+        receiver_role="Junior";
+        
+        cout << "Enter message: ";
+        
+        getline(cin, message);
+
+        
+        setnotification(type,sender_role,receiver_role,message);
+}
+
+    void notification::setnotification(string type, string sender, string receiver, const string& message_content) {
+        
+        if ((type != "warning" && type != "alert")) {
+             cout << "Invalid notification type: " << type << ". Must be 'warning' or 'alert'." << endl;
+             return;
+        }
+        if (sender != "Manager" && sender != "Director" && sender != "Executive") {
+            cout << "Notification sender role " << sender << " is not authorized for type " << type << "." << endl;
+            return;
+        }
+        
+
+        time_t now = time(0);
+        ofstream file("notification.txt", ios::app);
+        if (file.is_open()) {
+            file << "Notification Type: " << type << endl;
+            file << "Sender Role: " << sender << endl;
+            file << "Message: " << message_content << endl;
+            file << "Timestamp: " << ctime(&now); 
+            file << "------------------------" << endl;
+            cout << "Notification sent successfully and logged." << endl;
+            a.add("Notification_Sent","Ho gi majboori");
+            
+        } else {
+            cout << "Error opening notification.txt for writing." << endl;
+        }
+        if(file.is_open()) file.close();
+    }
+
+    void notification::displayAllNotifications() {
+        ifstream file("notification.txt");
+        if (!file.is_open()) {
+            cout << "No notifications found or error opening notification.txt." << endl;
+            return;
+        }
+
+        string line;
+        cout << "\n--- All Notifications ---" << endl;
+        bool notifications_exist = false;
+        while (getline(file, line)) {
+            notifications_exist = true;
+            cout << line << endl;
+        }
+        if (!notifications_exist) {
+            cout << "No notifications in the log file." << endl;
+        }
+        cout << "-----------------------" << endl; 
+        file.close();
+    }
+ostream& operator<<(ostream& cout,notification nnn)
+{
+	nn.displayAllNotifications();
+	return cout;
+}
+
+////////////////////////////////Message\\\\\\\\\\\\\\\\\\\\\\
+
+Message::Message(char* a)
+{
+	int i1=0;
+	for(;a[i1]!='\0';i1++);
+	sender = new char[i1];
+	for(int i=0;i<i1;i++)
+	sender[i]=a[i];
+	sender[i1]='\0';
+	
+	cout<<"Select the option\n";
+	cout<<"1.Send Info\n";
+	cout<<"2.Send Private Message\n";
+	cout<<"3.Send Alert\n";
+	cout<<"0.Back to Main Menu\n";
+	int i;
+	cin>>i;
+	switch(i)
+	{
+		case 1:
+		sendinfo();
+		break;
+		
+		case 2:
+		sendprivate();
+		break;
+		
+		case 3:
+		sendalert();
+		break;
+		
+		case 4:
+		//~Message();
+		break;
+		
+	}
+	
+}
+void Message::sendinfo()
+{
+	cout<<"Select Role to which u want to Send Information\n";
+	cout<<"1.Executive\n";
+	cout<<"2.Director\n";
+	cout<<"3.Manager\n";
+	cout<<"4.Employee\n";
+	cout<<"5.Junior\n";
+	int i;
+	cin>>i;
+	string reciever;
+	if(i==1)
+	{reciever="Executive";}
+	else if(i==2)
+	{reciever="Director";}
+	else if(i==3)
+	{reciever="Manager";}
+	else if(i==4)
+	{reciever="Employee";}
+	else if(i==5)
+	{reciever="Junior";}
+	
+	
+	
+	if (pe.cansend_message("INFO",sender,reciever))
+	{
+		char message[100];
+		cout<<"Enter the information: ";
+		cin.ignore();
+		enter(message);
+		char* u;
+		
+		fstream auth;
+		auth.open("users.txt",ios::in);
+		
+		fstream no;
+		no.open("noofuser.txt",ios::in);
+		int size;
+		no>>size;
+		no.close();
+		for(int k=0;k<size;k++)
+		{
+			char arr1[20],arr2[20],arr3[3];
+			for(int i=0;1;i++)
+			{
+				auth.get(arr1[i]);
+				if(arr1[i]=='-')
+				{
+					arr1[i]='\0';
+					break;
+				}
+			}
+			for(int i=0;1;i++)
+			{
+				auth.get(arr2[i]);
+				if(arr2[i]=='-')
+				{
+					arr2[i]='\0';
+					break;
+				}
+			}
+			auth.get(arr3[0]);
+			auth.get(arr3[1]);
+			arr3[2]='\0';
+			
+			if(k!=logged)
+			{
+				
+			}
+			else
+			{
+				int i1=0;
+				for(;arr1[i1]!='\0';i1++);
+				u=new char[i1];
+				for(int i=0;i<i1;i++)
+				u[i]=arr1[i];
+				u[i1]='\0';
+			}
+			
+			char temp;
+			auth.get(temp);
+			
+			
+		}
+		auth.close();
+		
+		auth.open("users.txt",ios::in);
+		int ii=0;
+		int ff=0;
+		while(!auth.eof())
+		{
+			char arr1[20],arr2[20],arr3[3];
+			for(int i=0;1;i++)
+			{
+				auth.get(arr1[i]);
+				if(arr1[i]=='-')
+				{
+					arr1[i]='\0';
+					break;
+				}
+			}
+			for(int i=0;1;i++)
+			{
+				auth.get(arr2[i]);
+				if(arr2[i]=='-')
+				{
+					arr2[i]='\0';
+					break;
+				}
+			}
+			auth.get(arr3[0]);
+			auth.get(arr3[1]);
+			arr3[2]='\0';
+			
+			if(i==1 && checkequal(arr3,"ex"))
+			{
+				fstream mess;
+				string f=string(arr1)+"_inbox.txt";
+				mess.open(f,ios::app);
+				
+				mess<<u<<": ";
+				mess<<encrypt(message)<<"\n";
+				
+				mess.close();
+			}
+			else if(i==2 && checkequal(arr3,"di"))
+			{
+				fstream mess;
+				string f=string(arr1)+"_inbox.txt";
+				mess.open(f,ios::app);
+				
+				mess<<u<<": ";
+				mess<<encrypt(message)<<"\n";
+				
+				mess.close();
+			}
+			else if(i==3 && checkequal(arr3,"ma"))
+			{
+				fstream mess;
+				string f=string(arr1)+"_inbox.txt";
+				mess.open(f,ios::app);
+				
+				mess<<u<<": ";
+				mess<<encrypt(message)<<"\n";
+				
+				mess.close();
+			}
+			else if(i==4 && checkequal(arr3,"em"))
+			{
+				fstream mess;
+				string f=string(arr1)+"_inbox.txt";
+				mess.open(f,ios::app);
+				
+				mess<<u<<": ";
+				mess<<encrypt(message)<<"\n";
+				
+				mess.close();
+			}
+			else if(i==5 && checkequal(arr3,"ju"))
+			{
+				fstream mess;
+				string f=string(arr1)+"_inbox.txt";
+				mess.open(f,ios::app);
+				
+				mess<<u<<": ";
+				mess<<encrypt(message)<<"\n";
+				
+				mess.close();
+			}
+			char temp;
+			auth.get(temp);
+			ii++;
+			
+		}
+		auth.close();
+		delete[] u;
+	}
+        Message("Executive");
+        
+
+}
+void Message::sendprivate()
+{
+	char* u;
+	cout<<"Select User to Send Message\n";
+	fstream auth;
+	auth.open("users.txt",ios::in);
+        int ii=0;
+        int ff=0;
+        fstream no;
+        no.open("noofuser.txt",ios::in);
+        int size;
+        no>>size;
+        no.close();
+        for(int k=0;k<size;k++)
+	{
+		char arr1[20],arr2[20],arr3[3];
+		for(int i=0;1;i++)
+		{
+			auth.get(arr1[i]);
+			if(arr1[i]=='-')
+			{
+				arr1[i]='\0';
+				break;
+			}
+		}
+		for(int i=0;1;i++)
+		{
+			auth.get(arr2[i]);
+			if(arr2[i]=='-')
+			{
+				arr2[i]='\0';
+				break;
+			}
+		}
+		auth.get(arr3[0]);
+		auth.get(arr3[1]);
+		arr3[2]='\0';
+		
+		if(ii!=logged)
+		{
+			cout<<ff+1<<'.'<<arr1<<endl;
+			ff++;
+		}
+		else
+		{
+			int i1=0;
+			for(;arr1[i1]!='\0';i1++);
+			u=new char[i1];
+			for(int i=0;i<i1;i++)
+			u[i]=arr1[i];
+			u[i1]='\0';
+		}
+		
+		char temp;
+		auth.get(temp);
+		ii++;
+		
+	}
+        auth.close();
+        int i;
+        cin>>i;
+        ff=0;
+        auth.open("users.txt",ios::in);
+        for(int k=0;k<size;k++)
+	{
+		char arr1[20],arr2[20],arr3[3];
+		for(int i=0;1;i++)
+		{
+			auth.get(arr1[i]);
+			if(arr1[i]=='-')
+			{
+				arr1[i]='\0';
+				break;
+			}
+		}
+		for(int i=0;1;i++)
+		{
+			auth.get(arr2[i]);
+			if(arr2[i]=='-')
+			{
+				arr2[i]='\0';
+				break;
+			}
+		}
+		auth.get(arr3[0]);
+		auth.get(arr3[1]);
+		arr3[2]='\0';
+		
+		if(ff==logged)
+		{
+			
+		}
+		else
+		{
+			if(i==ff)
+			{
+				string reciever;
+				if(checkequal(arr3,"ex"))
+				{reciever="Executive";}
+				else if(checkequal(arr3,"di"))
+				{reciever="Director";}
+				else if(checkequal(arr3,"ma"))
+				{reciever="Manager";}
+				else if(checkequal(arr3,"em"))
+				{reciever="Employee";}
+				else if(checkequal(arr3,"ju"))
+				{reciever="Junior";}
+				
+				
+				
+				if (pe.cansend_message("PRIVATE",sender,reciever))
+				{
+					fstream mess;
+					string f=string(arr1)+"_inbox.txt";
+					mess.open(f,ios::app);
+					char message[100];
+					cout<<"Enter the information: ";
+					cin.ignore();
+					enter(message);
+					mess<<u<<": ";
+					mess<<encrypt(message)<<"\n";
+					
+					mess.close();
+				}
+			}
+		}
+		
+		char temp;
+		auth.get(temp);
+		ii++;
+		ff++;
+		
+	}
+        auth.close();
+        delete[] u;
+        Message("Executive");
+
+}
+void Message::sendalert()
+{
+	char* u;
+	cout<<"Select User to Send Alert\n";
+	fstream auth;
+	auth.open("users.txt",ios::in);
+        int ii=0;
+        int ff=0;
+        fstream no;
+        no.open("noofuser.txt",ios::in);
+        int size;
+        no>>size;
+        no.close();
+        for(int k=0;k<size;k++)
+	{
+		char arr1[20],arr2[20],arr3[3];
+		for(int i=0;1;i++)
+		{
+			auth.get(arr1[i]);
+			if(arr1[i]=='-')
+			{
+				arr1[i]='\0';
+				break;
+			}
+		}
+		for(int i=0;1;i++)
+		{
+			auth.get(arr2[i]);
+			if(arr2[i]=='-')
+			{
+				arr2[i]='\0';
+				break;
+			}
+		}
+		auth.get(arr3[0]);
+		auth.get(arr3[1]);
+		arr3[2]='\0';
+		
+		if(ii!=logged)
+		{
+			cout<<ff+1<<'.'<<arr1<<endl;
+			ff++;
+		}
+		else
+		{
+			int i1=0;
+			for(;arr1[i1]!='\0';i1++);
+			u=new char[i1];
+			for(int i=0;i<i1;i++)
+			u[i]=arr1[i];
+			u[i1]='\0';
+		}
+		
+		char temp;
+		auth.get(temp);
+		ii++;
+		
+	}
+        auth.close();
+        int i;
+        cin>>i;
+        ff=0;
+        auth.open("users.txt",ios::in);
+        for(int k=0;k<size;k++)
+	{
+		char arr1[20],arr2[20],arr3[3];
+		for(int i=0;1;i++)
+		{
+			auth.get(arr1[i]);
+			if(arr1[i]=='-')
+			{
+				arr1[i]='\0';
+				break;
+			}
+		}
+		for(int i=0;1;i++)
+		{
+			auth.get(arr2[i]);
+			if(arr2[i]=='-')
+			{
+				arr2[i]='\0';
+				break;
+			}
+		}
+		auth.get(arr3[0]);
+		auth.get(arr3[1]);
+		arr3[2]='\0';
+		
+		if(ff==logged)
+		{
+			
+		}
+		else
+		{
+			if(i==ff)
+			{
+				string reciever;
+				if(checkequal(arr3,"ex"))
+				{reciever="Executive";}
+				else if(checkequal(arr3,"di"))
+				{reciever="Director";}
+				else if(checkequal(arr3,"ma"))
+				{reciever="Manager";}
+				else if(checkequal(arr3,"em"))
+				{reciever="Employee";}
+				else if(checkequal(arr3,"ju"))
+				{reciever="Junior";}
+				
+				
+				
+				if (pe.cansend_message("PRIVATE",sender,reciever))
+				{
+					fstream mess;
+					string f=string(arr1)+"_alert.txt";
+					mess.open(f,ios::app);
+					char message[100];
+					cout<<"Enter Alert Statment: ";
+					cin.ignore();
+					enter(message);
+					mess<<u<<": ";
+					mess<<message<<"\n";
+					
+					mess.close();
+				}
+			}
+		}
+		
+		char temp;
+		auth.get(temp);
+		ii++;
+		ff++;
+		
+	}
+        auth.close();
+        delete[] u;
+        Message("Executive");
+
+}
+
+//////////////////////////////// Executive\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+
+Executive::Executive()
+{	
+	cout<<"################################################################################################################################################";
+	cout<<nn<<endl;
+	cout<<"Welocme on Executive Panel!\n";
+	cout<<"1.Create Task\n";
+	cout<<"2.Assign Task\n";
+	cout<<"3.Select a Task\n";
+	cout<<"4.Show Expired Tasks\n";
+	cout<<"5.Message Someone\n";
+	cout<<"6.Check Inbox\n";
+	cout<<"7.Audit System\n";
+	cout<<"8.Performance Review\n";
+	cout<<"9.Send Notification\n";
+	cout<<"10.Add new Users\n";
+	cout<<"0.LogOut\n";
+	
+	int i;
+	cin>>i;
+	
+	switch(i)
+	{
+		case 1:
+		{
+			CreateTask("Executive");
+			Executive();
+			
+		}
+		break;
+		
+		case 2:
+		{
+			AssignTask("Executive");
+			Executive();
+		}
+		break;
+		
+		case 3:
+		{
+			SelectTask();
+			Executive();
+		}
+		break;
+		case 4:
+		{
+			ShowExpiredTasks();
+			Executive();
+		}
+		case 5:
+		{
+			Message m("Executive");
+			Executive();
+		}
+		break;
+		case 6:
+		{
+			Inbox();
+			Executive();
+		}
+		break;
+		case 7:
+		{
+			cout<<a;
+			Executive();
+		}
+		break;
+		case 8:
+		{
+			
+		}
+		break;
+		case 9:
+		{
+			notification n("Executive");
+		}
+		break;
+		case 10:
+		{
+			Users u;
+		}
+		break;
+		case 0:
+		{
+			cin.ignore();
+		}
+		break;
+	
+	}
+	
+}
+
+//////////////////////////Director\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+Director::Director()
+{
+	cout<<"################################################################################################################################################";
+	cout<<nn<<endl;
+	cout<<"Welocme on Director Panel!\n";
+	cout<<"1.Create Task\n";
+	cout<<"2.Assign Task\n";
+	cout<<"3.Delegate Task\n";
+	cout<<"4.Select a Task\n";
+	cout<<"5.Show Expired Tasks\n";
+	cout<<"6.Message Someone\n";
+	cout<<"7.Check Inbox\n";
+	cout<<"8.Audit System\n";
+	cout<<"9.Performance Review\n";
+	cout<<"0.LogOut\n";
+	
+	int i;
+	cin>>i;
+	
+	switch(i)
+	{
+		case 1:
+		{
+			CreateTask("Director");
+			Director();
+			
+		}
+		break;
+		
+		case 2:
+		{
+			AssignTask("Director");
+			Director();
+		}
+		break;
+		
+		case 3:
+		{
+			DelegateTask("Director");
+			Director();
+		}
+		break;
+		
+		case 4:
+		{
+			SelectTask();
+			Director();
+		}
+		break;
+		case 5:
+		{
+			ShowExpiredTasks();
+			Director();
+		}
+		break;
+		case 6:
+		{
+			Message m("Director");
+		}
+		break;
+		case 7:
+		{
+			Inbox();
+			Director();
+		}
+		break;
+		case 8:
+		{
+			cout<<a;
+			Director();
+		}
+		break;
+		case 9:
+		{
+			
+		}
+		break;
+		case 0:
+		{
+			cin.ignore();
+		}
+		break;
+	
+	}
+	
+}
+
+void Director::DelegateTask(string delegator_role)
+{
+	if (currentTask == nullptr) {
+	     cout << "No task is currently loaded/selected. Please Select a task first." << endl;
+	    Director();
+	}
+	currentTask->DisplayTask();
+
+	string delegatee_role;
+	
+
+	cout << "Enter Username to which u want to delegate: ";
+	cin.ignore();
+	getline(cin, delegatee_role);
+	fstream auth("users.txt",ios::in);
+        
+        while(!auth.eof())
+	{
+		char arr1[20],arr2[20],arr3[3];
+		for(int i=0;1;i++)
+		{
+			auth.get(arr1[i]);
+			if(arr1[i]=='-')
+			{
+				arr1[i]='\0';
+				break;
+			}
+		}
+		for(int i=0;1;i++)
+		{
+			auth.get(arr2[i]);
+			if(arr2[i]=='-')
+			{
+				arr2[i]='\0';
+				break;
+			}
+		}
+		auth.get(arr3[0]);
+		auth.get(arr3[1]);
+		arr3[2]='\0';
+		
+		if(checkequal(&delegatee_role[0],arr1))
+		{
+			if(checkequal(arr3,"ex"))
+			{
+				delegatee_role="Executive\0";
+				break;
+			}
+			else if(checkequal(arr3,"di"))
+			{
+				delegatee_role="Director\0";
+				break;
+			}
+			else if(checkequal(arr3,"ma"))
+			{
+				delegatee_role="Manager\0";
+				break;
+			}
+			else if(checkequal(arr3,"em"))
+			{
+				delegatee_role="Employee\0";
+				break;
+			}
+			else if(checkequal(arr3,"di"))
+			{
+				delegatee_role="Junior\0";
+				break;
+			}
+		}
+		
+		char temp;
+		auth.get(temp);
+	}
+        
+        auth.close();
+
+	
+
+	
+	    if (pe.candelegate(delegator_role, delegatee_role)) { 
+		currentTask->DelegateTask(delegator_role, delegatee_role);
+		a.add("Task_Delegated","Nahi hua ho ga");
+	    } else {
+		cout << "Delegation failed due to role permission issues." << endl;
+	    }
+	
+}
+
+
+//////////////////////////Manager\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+Manager::Manager()
+{
+	cout<<"################################################################################################################################################";
+	cout<<nn<<endl;
+	cout<<"Welocme on Manager Panel!\n";
+	cout<<"1.Create Task\n";
+	cout<<"2.Assign Task\n";
+	cout<<"3.Delegate Task\n";
+	cout<<"4.Select a Task\n";
+	cout<<"5.Show Expired Tasks\n";
+	cout<<"6.Message Someone\n";
+	cout<<"7.Check Inbox\n";
+	cout<<"8.Performance Review\n";
+	cout<<"9.Send Notification\n";
+	cout<<"0.LogOut\n";
+	
+	int i;
+	cin>>i;
+	
+	switch(i)
+	{
+		case 1:
+		{
+			CreateTask("Manager");
+			Manager();
+			
+		}
+		break;
+		
+		case 2:
+		{
+			AssignTask("Manager");
+			Manager();
+		}
+		break;
+		
+		case 3:
+		{
+			DelegateTask("Manager");
+			Manager();
+		}
+		break;
+		
+		case 4:
+		{
+			SelectTask();
+			Manager();
+		}
+		break;
+		case 5:
+		{
+			ShowExpiredTasks();
+			Manager();
+		}
+		case 6:
+		{
+			Message m("Manager");
+		}
+		break;
+		case 7:
+		{
+			Inbox();
+			Manager();
+		}
+		break;
+		case 8:
+		{
+			
+		}
+		break;
+		case 9:
+		{
+			notification n("Manager");
+		}
+		break;
+		case 0:
+		{
+			cin.ignore();
+		}
+		break;
+	
+	}
+	
+}
+
+void Manager::DelegateTask(string gkj)
+{
+	if (currentTask == nullptr) {
+	     cout << "No task is currently loaded/selected. Please Select a task first." << endl;
+	    Manager();
+	}
+	currentTask->DisplayTask();
+
+	string delegator_role, delegatee_role;
+	delegator_role="Manager";
+
+	cout << "Enter Username to which u want to delegate: ";
+	cin.ignore();
+	getline(cin, delegatee_role);
+	fstream auth("users.txt",ios::in);
+        
+        while(!auth.eof())
+	{
+		char arr1[20],arr2[20],arr3[3];
+		for(int i=0;1;i++)
+		{
+			auth.get(arr1[i]);
+			if(arr1[i]=='-')
+			{
+				arr1[i]='\0';
+				break;
+			}
+		}
+		for(int i=0;1;i++)
+		{
+			auth.get(arr2[i]);
+			if(arr2[i]=='-')
+			{
+				arr2[i]='\0';
+				break;
+			}
+		}
+		auth.get(arr3[0]);
+		auth.get(arr3[1]);
+		arr3[2]='\0';
+		
+		if(checkequal(&delegatee_role[0],arr1))
+		{
+			if(checkequal(arr3,"ex"))
+			{
+				delegatee_role="Executive\0";
+				break;
+			}
+			else if(checkequal(arr3,"di"))
+			{
+				delegatee_role="Director\0";
+				break;
+			}
+			else if(checkequal(arr3,"ma"))
+			{
+				delegatee_role="Manager\0";
+				break;
+			}
+			else if(checkequal(arr3,"em"))
+			{
+				delegatee_role="Employee\0";
+				break;
+			}
+			else if(checkequal(arr3,"di"))
+			{
+				delegatee_role="Junior\0";
+				break;
+			}
+		}
+		
+		char temp;
+		auth.get(temp);
+	}
+        
+        auth.close();
+
+	
+
+	
+	    if (pe.candelegate(delegator_role, delegatee_role)) { // Policy check
+		currentTask->DelegateTask(delegator_role, delegatee_role);
+		a.add("Task_Delegated","Nahi hua ho ga");
+	    } else {
+		cout << "Delegation failed due to role permission issues." << endl;
+	    }
+	
+}
+
+//////////////////////////////Employee\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+Employee::Employee()
+{
+	cout<<"################################################################################################################################################";
+	cout<<nn<<endl;
+	cout<<"Welocme on Employee Panel!\n";
+	cout<<"1.Assign Task\n";
+	cout<<"2.Delegate Task\n";
+	cout<<"3.Select a Task\n";
+	cout<<"4.Message Someone\n";
+	cout<<"5.Check Inbox\n";
+	cout<<"0.LogOut\n";
+	
+	int i;
+	cin>>i;
+	
+	switch(i)
+	{
+		
+		case 1:
+		{
+			AssignTask("Employee");
+			Employee();
+		}
+		break;
+		
+		case 2:
+		{
+			DelegateTask("Employee");
+			Employee();
+		}
+		break;
+		
+		case 3:
+		{
+			SelectTask();
+			Employee();
+		}
+		break;
+		case 4:
+		{
+			Message m("Employee");
+		}
+		break;
+		case 5:
+		{
+			Inbox();
+			Employee();
+		}
+		break;
+		case 0:
+		{
+			cin.ignore();
+		}
+		break;
+	
+	}
+	
+}
+void Employee::DelegateTask(string gkh)
+{
+	if (currentTask == nullptr) {
+	     cout << "No task is currently loaded/selected. Please Select a task first." << endl;
+	    Employee();
+	}
+	currentTask->DisplayTask();
+
+	string delegator_role, delegatee_role;
+	delegator_role="Employee";
+
+	cout << "Enter Username to which u want to delegate: ";
+	cin.ignore();
+	getline(cin, delegatee_role);
+	fstream auth("users.txt",ios::in);
+        
+        while(!auth.eof())
+	{
+		char arr1[20],arr2[20],arr3[3];
+		for(int i=0;1;i++)
+		{
+			auth.get(arr1[i]);
+			if(arr1[i]=='-')
+			{
+				arr1[i]='\0';
+				break;
+			}
+		}
+		for(int i=0;1;i++)
+		{
+			auth.get(arr2[i]);
+			if(arr2[i]=='-')
+			{
+				arr2[i]='\0';
+				break;
+			}
+		}
+		auth.get(arr3[0]);
+		auth.get(arr3[1]);
+		arr3[2]='\0';
+		
+		if(checkequal(&delegatee_role[0],arr1))
+		{
+			if(checkequal(arr3,"ex"))
+			{
+				delegatee_role="Executive\0";
+				break;
+			}
+			else if(checkequal(arr3,"di"))
+			{
+				delegatee_role="Director\0";
+				break;
+			}
+			else if(checkequal(arr3,"ma"))
+			{
+				delegatee_role="Manager\0";
+				break;
+			}
+			else if(checkequal(arr3,"em"))
+			{
+				delegatee_role="Employee\0";
+				break;
+			}
+			else if(checkequal(arr3,"di"))
+			{
+				delegatee_role="Junior\0";
+				break;
+			}
+		}
+		
+		char temp;
+		auth.get(temp);
+	}
+        
+        auth.close();
+
+	
+
+	
+	    if (pe.candelegate(delegator_role, delegatee_role)) { 
+		currentTask->DelegateTask(delegator_role, delegatee_role);
+		a.add("Task_Delegated","Nahi hua ho ga");
+	    } else {
+		cout << "Delegation failed due to role permission issues." << endl;
+	    }
+	
+}
+
+
+
+/////////////////////////////?Junior\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+Junior::Junior()
+{
+	cout<<"################################################################################################################################################";
+	cout<<nn<<endl;
+	cout<<"Welocme on Junior Panel!\n";
+	cout<<"1.Delegate Task\n";
+	cout<<"2.Select a Task\n";
+	cout<<"3.Message Someone\n";
+	cout<<"4.Check Inbox\n";
+	cout<<"0.LogOut\n";
+	
+	int i;
+	cin>>i;
+	
+	switch(i)
+	{
+		case 1:
+		{
+			DelegateTask("Junior");
+			Junior();
+		}
+		break;
+		
+		case 2:
+		{
+			SelectTask();
+			Junior();
+		}
+		break;
+		case 3:
+		{
+			Message m("Junior");
+		}
+		break;
+		case 4:
+		{
+			Inbox();
+			Junior();
+		}
+		break;
+		case 0:
+		{
+			cin.ignore();
+		}
+		break;
+		
+		
+	}
+	
+}
+
+void Junior::DelegateTask(string i)
+{
+	if (currentTask == nullptr) {
+	     cout << "No task is currently loaded/selected. Please Select a task first." << endl;
+	    Junior();
+	}
+	currentTask->DisplayTask();
+
+	string delegator_role, delegatee_role;
+	delegator_role="Junior";
+
+	cout << "Enter Username to which u want to delegate: ";
+	cin.ignore();
+	getline(cin, delegatee_role);
+	fstream auth("users.txt",ios::in);
+        
+        while(!auth.eof())
+	{
+		char arr1[20],arr2[20],arr3[3];
+		for(int i=0;1;i++)
+		{
+			auth.get(arr1[i]);
+			if(arr1[i]=='-')
+			{
+				arr1[i]='\0';
+				break;
+			}
+		}
+		for(int i=0;1;i++)
+		{
+			auth.get(arr2[i]);
+			if(arr2[i]=='-')
+			{
+				arr2[i]='\0';
+				break;
+			}
+		}
+		auth.get(arr3[0]);
+		auth.get(arr3[1]);
+		arr3[2]='\0';
+		
+		if(checkequal(&delegatee_role[0],arr1))
+		{
+			if(checkequal(arr3,"ex"))
+			{
+				delegatee_role="Junior\0";
+				break;
+			}
+			else if(checkequal(arr3,"di"))
+			{
+				delegatee_role="Director\0";
+				break;
+			}
+			else if(checkequal(arr3,"ma"))
+			{
+				delegatee_role="Manager\0";
+				break;
+			}
+			else if(checkequal(arr3,"em"))
+			{
+				delegatee_role="Employee\0";
+				break;
+			}
+			else if(checkequal(arr3,"di"))
+			{
+				delegatee_role="Junior\0";
+				break;
+			}
+		}
+		
+		char temp;
+		auth.get(temp);
+	}
+        
+        auth.close();
+
+	
+
+	
+	    if (pe.candelegate(delegator_role, delegatee_role)) { 
+		currentTask->DelegateTask(delegator_role, delegatee_role);
+		a.add("Task_Delegated","Nahi hua ho ga");
+	    } else {
+		cout << "Delegation failed due to role permission issues." << endl;
+	    }
+	
+}
+
+
+//////////////////////////////Base\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+void Base::CreateTask(string assignee_role)
+{
+	string title, desc, status_new, assignedTo_role;
+        int ttl_val;
+
+        cout << "Enter task title: ";
+        cin.ignore();
+        getline(cin, title);
+
+        cout << "Enter task description: ";
+        getline(cin, desc);
+
+        status_new = "Created"; 
+
+        
+
+        assignedTo_role="---";
+
+        cout << "Enter TTL in seconds (0 for no expiry): ";
+        cin >> ttl_val;
+        if (cin.fail()) {
+            cout << "Invalid TTL input. Using 0 (no expiry)." << endl;
+            cin.clear();
+            ttl_val = 0;
+        }
+        cin.ignore(1024, '\n');
+
+
+     
+            
+                int newId = getNextTaskId();
+                if (currentTask != nullptr) { 
+                    delete currentTask;       
+                    currentTask = nullptr;
+                }
+                currentTask = new TaskCreation(newId, title, desc, status_new, assignee_role, assignedTo_role, ttl_val);
+                if (currentTask->getTaskId() == 0) { 
+                    delete currentTask; 
+                    currentTask = nullptr;
+                   
+                } else {
+                    cout << "Task creation process finished for ID: " << currentTask->getTaskId() <<" & is also loaded as current task"<< endl;
+                    a.add("Task_Created","Bas Banaya hai to banaya hai");
+                   
+                }
+            
+       Base();
+
+	
+}
+void Base::AssignTask(string new_assigner_role)
+{
+	if (currentTask == nullptr) {
+	    cout << "No task is currently loaded/selected. Please find a task first." << endl;
+	   exit(1);
+	}
+	currentTask->DisplayTask(); 
+
+	string new_assignedTo_role;
+	
+	
+	cout << "Enter new 'assigned to' (Username): ";
+	cin.ignore();
+	getline(cin, new_assignedTo_role);
+	fstream auth("users.txt",ios::in);
+        
+        while(!auth.eof())
+	{
+		char arr1[20],arr2[20],arr3[3];
+		for(int i=0;1;i++)
+		{
+			auth.get(arr1[i]);
+			if(arr1[i]=='-')
+			{
+				arr1[i]='\0';
+				break;
+			}
+		}
+		for(int i=0;1;i++)
+		{
+			auth.get(arr2[i]);
+			if(arr2[i]=='-')
+			{
+				arr2[i]='\0';
+				break;
+			}
+		}
+		auth.get(arr3[0]);
+		auth.get(arr3[1]);
+		arr3[2]='\0';
+		
+		if(checkequal(&new_assignedTo_role[0],arr1))
+		{
+			if(checkequal(arr3,"ex"))
+			{
+				new_assignedTo_role="Base\0";
+				break;
+			}
+			else if(checkequal(arr3,"di"))
+			{
+				new_assignedTo_role="Director\0";
+				break;
+			}
+			else if(checkequal(arr3,"ma"))
+			{
+				new_assignedTo_role="Manager\0";
+				break;
+			}
+			else if(checkequal(arr3,"em"))
+			{
+				new_assignedTo_role="Employee\0";
+				break;
+			}
+			else if(checkequal(arr3,"di"))
+			{
+				new_assignedTo_role="Junior\0";
+				break;
+			}
+		}
+		
+		char temp;
+		auth.get(temp);
+	}
+        
+        auth.close();
+
+	
+	    if (pe.canassign(new_assigner_role, new_assignedTo_role)) { 
+		currentTask->AssignTask(new_assigner_role, new_assignedTo_role);
+		a.add("Task_Assigned","Ho gaya assigned");
+	    } else {
+		cout << "Assignment failed due to role permission issues." << endl;
+	    }
+	
+}
+void Base::SelectTask()
+{
+	TaskCreation::ListAllTasks();
+	int id_to_find;
+        cout << "Enter task ID to find and load: ";
+        cin >> id_to_find;
+         if (cin.fail()) {
+            cout << "Invalid ID input." << endl;
+            cin.clear();
+            cin.ignore(1024, '\n');
+            
+        }
+        cin.ignore(1024, '\n');
+
+
+        if (currentTask != nullptr) { 
+            delete currentTask;
+            currentTask = nullptr;
+        }
+        currentTask = findTaskById(id_to_find); 
+        if (currentTask == nullptr) {
+            cout << "Task with ID " << id_to_find << " not found or failed to load." << endl;
+        } else {
+            cout << "Task ID " << id_to_find << " loaded as current task." << endl;
+            
+        }
+   
+}
+
+void Base::Inbox()
+{
+	
+	string f;
+	fstream auth;
+	auth.open("users.txt",ios::in);
+        int ii=0;
+        int ff=0;
+        fstream no;
+        no.open("noofuser.txt",ios::in);
+        int size;
+        no>>size;
+        no.close();
+        for(int k=0;k<size;k++)
+	{
+		char arr1[20],arr2[20],arr3[3];
+		for(int i=0;1;i++)
+		{
+			auth.get(arr1[i]);
+			if(arr1[i]=='-')
+			{
+				arr1[i]='\0';
+				break;
+			}
+		}
+		for(int i=0;1;i++)
+		{
+			auth.get(arr2[i]);
+			if(arr2[i]=='-')
+			{
+				arr2[i]='\0';
+				break;
+			}
+		}
+		auth.get(arr3[0]);
+		auth.get(arr3[1]);
+		arr3[2]='\0';
+		
+		if(ii!=logged)
+		{
+			
+		}
+		else
+		{
+			f=string(arr1)+"_inbox.txt";
+			
+		}
+		
+		char temp;
+		auth.get(temp);
+		ii++;
+		
+	}
+        auth.close();
+        
+        fstream inbox;
+       	inbox.open(f,ios::in);
+        
+        while(inbox.peek() != EOF)
+        {
+		char arr[20];
+		for(int i=0;1;i++)
+	    	{
+			inbox.get(arr[i]);
+	       		if(arr[i]==':')
+	       		break;
+		}
+		char temp;
+		inbox.get(temp);
+		char mess[200]={};
+		for(int i=0;1;i++)
+		{
+			inbox.get(mess[i]);
+			if(mess[i]=='\n')
+			{
+				mess[i]='\0';
+				break;
+			}
+		}
+		string message=decrypt(mess);
+		cout<<arr<<message;
+        	cout<<"\n";
+        }
+        inbox.close();
+	
+	
+}
+void Base::DelegateTask(string delegator_role)
+{
+	
+}
+
+
+/////////////////////////////PolicyEngine\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+int policyengine::getrole(string role_to_check) { 
+        for (int i = 0; i < 5; i++) {
+            if (role_to_check == this->role[i]) {
+                
+                return i;
+            }
+        }
+        
+        return -1; 
+    }
+
+bool policyengine::candelegate(string assigner, string assign_to) {
+	int assignerRole = getrole(assigner);
+	int assigneeRole = getrole(assign_to);
+
+	
+
+	if (assignerRole < assigneeRole) {
+	    cout << "Assigner (" << assigner << ") can delegate the task to assignee (" << assign_to << ")" << endl;
+	    return true;
+	} else {
+	    cout << "Assigner (" << assigner << ") cannot delegate the task to assignee (" << assign_to << ")" << endl;
+	    return false;
+	}
+}
+
+bool policyengine::canassign(string assignerRole_str, string assigneeRole_str) { 
+	int assignerRoleIndex = getrole(assignerRole_str);
+	int assigneeRoleIndex = getrole(assigneeRole_str);
+	
+	if (assignerRoleIndex == -1 || assigneeRoleIndex == -1) {
+	    cout << "Invalid role provided for assignment check." << endl;
+	    return false; 
+	}
+
+	
+	if (assignerRoleIndex > assigneeRoleIndex) {
+	    cout << "Task can be assigned by " << assignerRole_str << " to " << assigneeRole_str << endl;
+	    return true;
+	} else {
+	    cout << "Task cannot be assigned by " << assignerRole_str << " to " << assigneeRole_str << " (permission denied)" << endl;
+	    return false;
+	}
+}
+
+bool policyengine::cansend_message(string message_type, string sender_role, string receiver_role) { // Renamed parameters
+	int senderROLE = getrole(sender_role);
+	int receiverROLE = getrole(receiver_role);
+
+	
+	if (message_type == "ALERT") {
+	    
+	    if (senderROLE >= receiverROLE && senderROLE >= 1) { 
+		cout << "Alert message can be sent from " << sender_role << " to " << receiver_role << endl;
+		return true;
+	    } else {
+		cout << "Alert message cannot be sent by " << sender_role << " to " << receiver_role << " (permission denied)" << endl;
+		return false;
+	    }
+	} else if (message_type == "INFO") {
+	    cout << "Info message can be sent from " << sender_role << " to " << receiver_role << endl;
+	    return true;
+	} else if (message_type == "PRIVATE") {
+	    cout << "Private message can be sent from " << sender_role << " to " << receiver_role << endl;
+	    return true;
+	}
+
+	cout << "Unknown message type: " << message_type << endl;
+	return false;
+}
+
+
+
+/////////////////////////////PrioriyLevel\\\\\\\\\\\\\\\\\\\\\\\\\
+
+prioritylevel::prioritylevel() {
+this->priorityslevel = "low"; 
+}
+
+void prioritylevel::setPriorityLevel(string new_prioritylevel) {
+if (new_prioritylevel == "low" || new_prioritylevel == "medium" || new_prioritylevel == "high") {
+    this->priorityslevel = new_prioritylevel;
+    
+    cout << "Priority level set to: " << this->priorityslevel << endl;
+} else {
+    cout << "Invalid priority level provided: '" << new_prioritylevel << "'. Setting to default (low)." << endl;
+    this->priorityslevel = "low";
+}
+}
+
+string prioritylevel::getPrioritysLevel() {
+return priorityslevel;
+}
+
+
+/////////////////////////////?Task\\\\\\\\\\\\\\\\\\\\\
+
+
+    
+    
+    TaskCreation::TaskCreation(int TaskID_param, string title_param, string description_param, string status_param, string assignee_param, string assignedTo_param, int ttlSeconds_param ) {
+        this->taskId = 0; 
+
+        int UniqueTaskId_file;
+        string filetitle_read, filedescription_read, filestatus_read, filepriority_str_read, fileassignee_read, fileassignedto_read;
+        time_t fileCreationTime_read;
+        int filettlSeconds_read;
+
+        ifstream checkFile("Tasks.txt");
+        bool id_exists = false;
+        if (checkFile.is_open()) { 
+            while(checkFile >> UniqueTaskId_file >> filetitle_read >> filedescription_read >> filestatus_read >> filepriority_str_read >> fileassignee_read >> fileassignedto_read >> fileCreationTime_read >> filettlSeconds_read) {
+                if (UniqueTaskId_file == TaskID_param) {
+                    id_exists = true;
+                    break;
+                }
+            }
+            checkFile.close();
+        } 
+
+        if (id_exists) {
+            cout << "Task ID " << TaskID_param << " already exists. Task not created." << endl;
+            
+            return;
+        }
+
+        
+        this->taskId = TaskID_param;
+        this->taskTitle = title_param;
+        this->taskDescription = description_param;
+        this->status = status_param;
+        this->assignee = assignee_param;
+        this->assignedTo = assignedTo_param;
+        this->creationTime = time(0); 
+        this->ttlSeconds = ttlSeconds_param;
+
+        string p_priority_input;
+        cout << "Enter the priority level for new task (low || medium || high): ";
+        cin >> p_priority_input;
+        cin.ignore(1024, '\n'); 
+        this->priority.setPriorityLevel(p_priority_input);
+
+        
+        string safeTitle = this->taskTitle;
+        string safeDescription = this->taskDescription;
+        
+
+        replaceSpacesWithUnderscores(safeTitle);
+        replaceSpacesWithUnderscores(safeDescription);
+        
+
+        ofstream outFile("Tasks.txt", ios::app);
+        if(outFile.is_open()) {
+            outFile << this->taskId << "\t"
+                    << safeTitle << "\t"
+                    << safeDescription << "\t"
+                    << this->status << "\t" 
+                    << this->priority.getPrioritysLevel() << "\t"
+                    << this->assignee << "\t" 
+                    << this->assignedTo << "\t" 
+                    << this->creationTime << "\t"
+                    << this->ttlSeconds << endl;
+            cout << "Task " << this->taskId << " created and saved to file." << endl;
+        } else {
+            cout << "Error opening Tasks.txt for writing. Task not saved." << endl;
+            this->taskId = 0; 
+        }
+        if(outFile.is_open()) outFile.close();
+    }
+
+    
+    TaskCreation::TaskCreation(int loaded_TaskID, string loaded_title, string loaded_description,
+                 string loaded_status, string loaded_priority_str, string loaded_assignee,
+                 string loaded_assignedTo, time_t loaded_creationTime, int loaded_ttlSeconds)
+        : taskId(loaded_TaskID), taskTitle(loaded_title), taskDescription(loaded_description),
+          status(loaded_status), assignee(loaded_assignee), assignedTo(loaded_assignedTo),
+          creationTime(loaded_creationTime), ttlSeconds(loaded_ttlSeconds) {
+        
+        this->priority.setPriorityLevel(loaded_priority_str);
+    }
+
+
+    void TaskCreation::AssignTask(string new_assignee, string new_assignedTo) { // Renamed parameters
+        this->assignee = new_assignee;
+        this->assignedTo = new_assignedTo;
+        this->status = "assigned";
+
+        
+        ifstream inFile("Tasks.txt");
+        ofstream outFile("Temp.txt");
+
+        int FileId_iter;
+        int FileTtl_iter;
+        string FileTitle_iter, FileDescription_iter, FileStatus_iter, FilePriority_iter, FileAssignee_iter, FileAssignedTo_iter;
+        time_t FileTime_iter;
+
+        if (!inFile.is_open() || !outFile.is_open()) {
+            cout << "Error opening files for assigning task." << endl;
+            if(inFile.is_open()) inFile.close();
+            if(outFile.is_open()) outFile.close();
+            return;
+        }
+
+        bool taskFoundAndUpdated = false;
+        while (inFile >> FileId_iter >> FileTitle_iter >> FileDescription_iter >> FileStatus_iter >> FilePriority_iter >> FileAssignee_iter >> FileAssignedTo_iter >> FileTime_iter >> FileTtl_iter) {
+            if(FileId_iter == this->taskId) {
+                taskFoundAndUpdated = true;
+              
+                
+                
+                outFile << FileId_iter << "\t"
+                        << FileTitle_iter << "\t"       
+                        << FileDescription_iter << "\t"
+                        << this->status << "\t"         
+                        << FilePriority_iter << "\t"    
+                        << this->assignee << "\t"       
+                        << this->assignedTo << "\t"     
+                        << FileTime_iter << "\t"       
+                        << FileTtl_iter << endl;       
+            } else {
+                
+                outFile << FileId_iter << "\t" << FileTitle_iter << "\t" << FileDescription_iter << "\t" << FileStatus_iter << "\t" << FilePriority_iter << "\t" << FileAssignee_iter << "\t" << FileAssignedTo_iter << "\t" << FileTime_iter << "\t" << FileTtl_iter << endl;
+            }
+        }
+
+        inFile.close();
+        outFile.close();
+
+        if (taskFoundAndUpdated) {
+            remove("Tasks.txt");
+            rename("Temp.txt", "Tasks.txt");
+            cout << "Task " << this->taskId << " assigned successfully" << endl;
+        } else {
+            remove("Temp.txt"); 
+            cout << "Error: Task " << this->taskId << " not found during assignment update." << endl;
+        }
+    }
+
+    void TaskCreation::DelegateTask(string new_delegator,string new_delegatee) { 
+        this->assignee = new_delegator; 
+        this->assignedTo = new_delegatee; 
+        this->status = "delegated";
+
+        ifstream inFile("Tasks.txt");
+        ofstream outFile("Temp.txt");
+        
+        int FileId_iter;
+        int FileTtl_iter;
+        string FileTitle_iter, FileDescription_iter, FileStatus_iter, FilePriority_iter, FileAssignee_iter, FileAssignedTo_iter;
+        time_t FileTime_iter;
+
+        if (!inFile.is_open() || !outFile.is_open()) {
+            cout << "Error opening files for delegating task." << endl;
+            if(inFile.is_open()) inFile.close();
+            if(outFile.is_open()) outFile.close();
+            return;
+        }
+        bool taskFoundAndUpdated = false;
+        while (inFile >> FileId_iter >> FileTitle_iter >> FileDescription_iter >> FileStatus_iter >> FilePriority_iter >> FileAssignee_iter >> FileAssignedTo_iter >> FileTime_iter >> FileTtl_iter) {
+            if(FileId_iter == this->taskId) {
+                taskFoundAndUpdated = true;
+                outFile << FileId_iter << "\t"
+                        << FileTitle_iter << "\t"
+                        << FileDescription_iter << "\t"
+                        << this->status << "\t"         
+                        << FilePriority_iter << "\t"
+                        << this->assignee << "\t"      
+                        << this->assignedTo << "\t"     
+                        << FileTime_iter << "\t"
+                        << FileTtl_iter << endl;
+            } else {
+                outFile << FileId_iter << "\t" << FileTitle_iter << "\t" << FileDescription_iter << "\t" << FileStatus_iter << "\t" << FilePriority_iter << "\t" << FileAssignee_iter << "\t" << FileAssignedTo_iter << "\t" << FileTime_iter << "\t" << FileTtl_iter << endl;
+            }
+        }
+        inFile.close();
+        outFile.close();
+
+        if (taskFoundAndUpdated) {
+            remove("Tasks.txt");
+            rename("Temp.txt", "Tasks.txt");
+            cout << "Task " << this->taskId << " delegated successfully" << endl;
+        } else {
+            remove("Temp.txt");
+            cout << "Error: Task " << this->taskId << " not found during delegation update." << endl;
+        }
+    }
+
+    void TaskCreation::DeleteTask() {
+        ifstream inFile("Tasks.txt");
+        ofstream outFile("Temp.txt");
+        
+        int FileId_iter;
+        int FileTtl_iter;
+        string FileTitle_iter, FileDescription_iter, FileStatus_iter, FilePriority_iter, FileAssignee_iter, FileAssignedTo_iter;
+        time_t FileTime_iter;
+
+        if (!inFile.is_open() || !outFile.is_open()) {
+            cout << "Error opening files for deleting task." << endl;
+            if(inFile.is_open()) inFile.close();
+            if(outFile.is_open()) outFile.close();
+            return;
+        }
+        bool taskFound = false; 
+        int tasksKept = 0;
+        while (inFile >> FileId_iter >> FileTitle_iter >> FileDescription_iter >> FileStatus_iter >> FilePriority_iter >> FileAssignee_iter >> FileAssignedTo_iter >> FileTime_iter >> FileTtl_iter) {
+            if(FileId_iter == this->taskId) {
+                taskFound = true;
+               
+            } else {
+                tasksKept++;
+                outFile << FileId_iter << "\t" << FileTitle_iter << "\t" << FileDescription_iter << "\t" << FileStatus_iter << "\t" << FilePriority_iter << "\t" << FileAssignee_iter << "\t" << FileAssignedTo_iter << "\t" << FileTime_iter << "\t" << FileTtl_iter << endl;
+            }
+        }
+        inFile.close();
+        outFile.close();
+
+        if (taskFound) {
+            remove("Tasks.txt");
+            if (tasksKept > 0) { 
+                 rename("Temp.txt", "Tasks.txt");
+            } else { 
+                 remove("Temp.txt"); 
+                 
+            }
+            cout << "Task with ID " << this->taskId << " deleted successfully from file." << endl;
+        } else {
+            remove("Temp.txt"); 
+            cout << "Task with ID " << this->taskId << " not found, no deletion performed from file." << endl;
+        }
+         
+    }
+
+    void TaskCreation::UpdateTaskStatus(string new_status_param) { // Renamed parameter
+        this->status = new_status_param;
+        
+
+        ifstream inFile("Tasks.txt");
+        ofstream outFile("Temp.txt");
+        
+        int FileId_iter;
+        int FileTtl_iter;
+        string FileTitle_iter, FileDescription_iter, FileStatus_iter, FilePriority_iter, FileAssignee_iter, FileAssignedTo_iter;
+        time_t FileTime_iter;
+
+        if (!inFile.is_open() || !outFile.is_open()) {
+            cout << "Error opening files for updating task status." << endl;
+            if(inFile.is_open()) inFile.close();
+            if(outFile.is_open()) outFile.close();
+            return;
+        }
+        bool taskFoundAndUpdated = false;
+        while (inFile >> FileId_iter >> FileTitle_iter >> FileDescription_iter >> FileStatus_iter >> FilePriority_iter >> FileAssignee_iter >> FileAssignedTo_iter >> FileTime_iter >> FileTtl_iter) {
+            if(FileId_iter == this->taskId) {
+                taskFoundAndUpdated = true;
+                outFile << FileId_iter << "\t"
+                        << FileTitle_iter << "\t"
+                        << FileDescription_iter << "\t"
+                        << this->status << "\t"         
+                        << FilePriority_iter << "\t"
+                        << FileAssignee_iter << "\t"
+                        << FileAssignedTo_iter << "\t"
+                        << FileTime_iter << "\t"
+                        << FileTtl_iter << endl;
+            } else {
+                outFile << FileId_iter << "\t" << FileTitle_iter << "\t" << FileDescription_iter << "\t" << FileStatus_iter << "\t" << FilePriority_iter << "\t" << FileAssignee_iter << "\t" << FileAssignedTo_iter << "\t" << FileTime_iter << "\t" << FileTtl_iter << endl;
+            }
+        }
+        inFile.close();
+        outFile.close();
+
+        if (taskFoundAndUpdated) {
+            remove("Tasks.txt");
+            rename("Temp.txt", "Tasks.txt");
+            cout << "Task " << this->taskId << " status updated to: " << this->status<< endl;
+        } else {
+            remove("Temp.txt");
+             cout << "Error: Task " << this->taskId << " not found during status update." << endl;
+        }
+    }
+
+    void TaskCreation::DisplayTask() {
+        if (taskId == 0) {
+            cout << "Cannot display task: Task ID is invalid (possibly creation failed or not loaded)." << endl;
+            return;
+        }
+        cout << "\n--- Task Details (Object in Memory) ---" << endl;
+        cout << "Task ID: " << taskId << endl;
+        cout << "Title: " << taskTitle << endl;
+        cout << "Description: " << taskDescription << endl;
+        cout << "Status: " << status << endl;
+        cout << "Priority: " << priority.getPrioritysLevel() << endl;
+        cout << "Assigner (Role): " << assignee << endl;
+        cout << "Assigned To (Role): " << assignedTo << endl;
+        // ctime adds a newline character at the end of its string
+        cout << "Creation Time: " << (creationTime == 0 ? "Not set" : ctime(&creationTime));
+        cout << "TTL (seconds): " << ttlSeconds << (ttlSeconds == 0 ? " (No Expiry)" : "") << endl;
+        cout << "---------------------------------------\n" << endl;
+    }
+
+    void TaskCreation::ListAllTasks() {
+        ifstream file("Tasks.txt");
+        if (!file.is_open()) {
+            cout << "Error opening tasks file or no tasks exist yet." << endl;
+            return;
+        }
+
+        cout << "\n--- All Tasks (from File) ---" << endl;
+        int count = 0;
+        int id_file;
+        int ttl_file;
+        string title_file, desc_file, status_file, priority_file, assignee_file, assignedTo_file;
+        time_t time_file;
+
+        while (file >> id_file >> title_file >> desc_file >> status_file >> priority_file >> assignee_file >> assignedTo_file >> time_file >> ttl_file) {
+            count++;
+            cout << "Task ID: " << id_file
+                 << " | Title: " << replaceUnderscoresWithSpaces(title_file)
+                 << " | Status: " << replaceUnderscoresWithSpaces(status_file) 
+                 << " | Priority: " << priority_file 
+                 << " | Assigned To: " << replaceUnderscoresWithSpaces(assignedTo_file) 
+                 << endl;
+        }
+
+        if (count == 0) {
+            cout << "No tasks found in Tasks.txt." << endl;
+        }
+        cout << "\nTotal tasks: " << count << endl;
+        cout << "-----------------------------\n" << endl;
+        file.close();
+    }
+
+    int TaskCreation::getTaskId() { return taskId; }
+    
+
+
+
+
