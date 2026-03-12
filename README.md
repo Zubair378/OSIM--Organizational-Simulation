@@ -264,27 +264,6 @@ g++ -Iinclude src/main.cpp src/audit.cpp src/message.cpp src/misc.cpp src/notifi
 .\osim.exe
 ```
 
-## Upload Organized Project to GitHub
-
-If your repository already exists on GitHub and you want to upload this organized structure (`src/`, `include/`, `data/`), run:
-
-```powershell
-cd E:\oop\final
-git init
-git branch -M main
-git remote add origin https://github.com/Zubair378/OSIM--Organizational-Simulation.git
-git add .
-git commit -m "Organize project into src include data"
-git pull origin main --allow-unrelated-histories
-git push -u origin main
-```
-
-If `origin` already exists, use this command instead of `git remote add origin ...`:
-
-```powershell
-git remote set-url origin https://github.com/Zubair378/OSIM--Organizational-Simulation.git
-```
-
 ## OTP Check During Login
 
 After entering username and password, the program writes the generated OTP to `data/otp.txt`.
