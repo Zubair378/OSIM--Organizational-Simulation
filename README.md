@@ -1,4 +1,3 @@
-# OSIM
 # OSIM - Organizational Simulation and Internal Management System
 
 OSIM is a C++ console-based organizational workflow simulator. It models how an internal company system can manage users, role-based permissions, tasks, notifications, internal messaging, OTP-based login, and audit logging.
